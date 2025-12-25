@@ -10,12 +10,12 @@ genai.configure(api_key="")
 
 def main():
     pdf_path = "test/"
-    pdf_path += input("Enter syllabus file name: ")
+    pdf_path += input("Enter syllabus Efile name: ")
     pdf_path += ".pdf"
-    course = input("Enter course name: ")
+    course_name = input("Enter course name: ")
     text= extract_text_pypdf(pdf_path)
-    response = api(text)
-    print(response.text)
+    response = api(text, course_name)
+    print(response)
 
 def extract_text_pypdf(pdf_path):
     """Extract text from PDF using pypdf"""
@@ -50,7 +50,7 @@ def api(text, course_name):
             })
     
     return json.dumps({
-        "course": course_name,  # Use your course variable
+        "course": course_name,  
         "assignments": assignments
     }, indent=2)
 
