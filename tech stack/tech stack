@@ -2,5 +2,6 @@ Frontend: Next.js 14 (App Router) + TypeScript + Tailwind CSS
 Backend: FastAPI (Python) + Pydantic for schemas
 Queue: Celery + Redis (simpler to start) or BullMQ (Node-based)
 Database: PostgreSQL (for user data, jobs) + Prisma/SQLAlchemy
-AI: OpenAI GPT-4-turbo (structured output) or Claude 3 Haiku
+AI: Gemini 2.5-Flash (structured output) 
 Storage: Local for dev, AWS S3/Linode Object Storage for prod
+Deployment: Github Pages + Render for API security
