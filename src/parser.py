@@ -34,7 +34,7 @@ def extract_text_pypdf(pdf_path):
 def api(text): 
     prompt = """
     You are a precise data extraction assistant. Your task is to find all my assignments + dates for this class. 
-    Only return Assignment name + dates in MM/DD/2025 format (If a date in the document mentions a month and day but lacks a year, assume the year is 2025.). 
+    Only return Assignment name : dates in MM/DD/2025 format (EXAMPLE: Homework 9:Homework 09/03/2025) (If a date in the document mentions a month and day but lacks a year, assume the year is 2025.). 
      If a due date is a range (e.g., "Oct 1-3"), use the final date of the range.
 
     Do not output anything else.
@@ -51,13 +51,14 @@ def api(text):
     
     for line in lines:
         line = line.strip()
-        if ': ' in line:
-            name, date = line.split(': ', 1)
+        if ': ' in line or ' - ' in line:
+            separator = ': ' if ': ' in line else ' - '
+            name, date = line.split(separator, 1)
             assignments.append({
                 "assignment_name": name.strip(),
                 "due_date": date.strip()
             })
-    
+    print("Raw Gemini:", response.text)
     return json.dumps({
 #        "course": course_name,  
         "assignments": assignments
