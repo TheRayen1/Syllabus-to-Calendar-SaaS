@@ -50,7 +50,7 @@ def send_to_calendar(calendar_ready):
         print(f"Added: {event['summary']}")
     
     return "Done"
-#output = parser.parse()
-#calendar_ready = json_to_calendar(output)
+output = parser.parse()
+calendar_ready = json_to_calendar(output)
 
-#send_to_calendar(calendar_ready)
+send_to_calendar(calendar_ready)
