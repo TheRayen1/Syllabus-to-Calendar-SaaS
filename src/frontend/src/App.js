@@ -1,4 +1,4 @@
-import logo from './logo.svg';
+import logo from './logo.png';
 import './App.css';
 
 function App() {
@@ -6,7 +6,6 @@ function App() {
     <div className="App">
       <header className="App-header">
       <h1>Syllabus to Calendar App</h1>
-      <h2>Made by Mowgli</h2>
       <h3>Le Talent N'existe pas</h3>
 
         <img src={logo} className="App-logo" alt="logo" />

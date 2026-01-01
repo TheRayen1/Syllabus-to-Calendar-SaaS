@@ -1,18 +1,20 @@
 .App {
   font-family: sans-serif;
   text-align: center;
+  margin-top:0;
+}
+.App h1, .App h2, .App h3 {
+    color: rgb(6, 179, 179); 
+    margin: 10px;
 }
 .App h1{
-    color: rgb(6, 179, 179); 
-    font-size: 24px;
+    font-size: 60px;
 }
 .App h2{
-    color: rgb(6, 179, 179); 
     font-size: 20px;
 }
 .App h3{
-    color: rgb(6, 179, 179); 
-    font-size: 20px;
+    font-size: 10px;
     font-style: italic;
 }
 .App-logo {
