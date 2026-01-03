@@ -1,5 +1,6 @@
 import React from 'react'; 
 import './App.css';
+import './MainWork.css';
 
 const PDFFileSelector = () => {
   const [file, setFile] = React.useState(null);
@@ -64,7 +65,7 @@ const PDFFileSelector = () => {
         <button 
           type="button" 
           onClick={handleButtonClick}
-          className="select-file-btn"
+          className="lets-go-btn"
         >
           Choose PDF File
         </button>
@@ -90,14 +91,14 @@ const PDFFileSelector = () => {
               <button 
                 type="button" 
                 onClick={removeFile}
-                className="remove-file-btn"
+                className="file-change-btn"
               >
                 Remove
               </button>
               <button 
                 type="button" 
                 onClick={handleButtonClick}
-                className="change-file-btn"
+                className="file-change-btn"
               >
                 Change File
               </button>
