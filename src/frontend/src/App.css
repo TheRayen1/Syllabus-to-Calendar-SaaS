@@ -2,14 +2,22 @@
   font-family: sans-serif;
   text-align: center;
   margin-top:0;
+    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+  position: relative;
+  overflow: hidden;
+
 }
+  
+
 .App h1, .App h2, .App h3 {
     color: rgb(6, 179, 179); 
     margin: 10px;
 }
 .App h1{
     font-size: 60px;
+    
 }
+
 .App h2{
     font-size: 20px;
 }
@@ -24,7 +32,8 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+    animation: App-logo-spin infinite 40s linear;
+
   }
 }
 
