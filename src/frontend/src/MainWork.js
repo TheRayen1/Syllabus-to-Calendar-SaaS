@@ -1,7 +1,13 @@
+import React, { useState } from 'react';
+import './MainWork.css';
+
 function MainWork() {
+    const [name, setName] = useState("");
 
   const handleFileChange = (event) => {
-    alert("FUNCTION TRIGGERED!"); 
+    alert("FUNCTION TRIGGERED!");   
+
+
 
     const file = event.target.files[0]; // Get the file from the event
     
@@ -24,12 +30,26 @@ function MainWork() {
 
         <div>
         <h1>PDF Uploader</h1>
+        <p>Upload your Syllabus: </p>
+
         <input 
+            className= "modern-input2"
+
             type="file" 
             accept=".pdf" 
             onChange={handleFileChange} 
-        />
-        </div>   
+        />        </div>  
+    <div> 
+    <p>Enter Course Name: </p>
+
+      <input
+       className= "modern-input"
+        type="text" 
+        placeholder="Type something..."
+        value={name} 
+        onChange={(e) => setName(e.target.value)} 
+      />
+    </div>
         </header>
     </div>
 
