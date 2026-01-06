@@ -117,7 +117,8 @@
   cursor: pointer;
   font-weight: 600;
     }
-        
+
+
 .browse-btn:hover {
   background: #f8f9fa;
   transform: translateY(-1px);

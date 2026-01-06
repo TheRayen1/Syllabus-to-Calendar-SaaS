@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
 import './MainWork.css';
-
+import './Home.css'
 function MainWork() {
     const [name, setName] = useState("");
+    const [selectedFile, setSelectedFile] = useState(null);
+
 
   const handleFileChange = (event) => {
-    alert("FUNCTION TRIGGERED!");   
-
-
-
-    const file = event.target.files[0]; // Get the file from the event
-    
-    if (!file) return;
-
+    alert("FILE RECEIVED!");   
+   const file = event.target.files[0];
+    setSelectedFile(file) // Get the file from the event    
+  }
+    const handleUpload = () => {
+        alert("retrieving successful!")
     const formData = new FormData();
-    formData.append('pdf_file', file);
-
+    formData.append('pdf_file', selectedFile);
     fetch('http://127.0.0.1:5000/upload', {
       method: 'POST',
       body: formData,
@@ -36,7 +35,7 @@ function MainWork() {
             className= "modern-input2"
 
             type="file" 
-            accept=".pdf" 
+            accept=".pdf"
             onChange={handleFileChange} 
         />        </div>  
     <div> 
@@ -50,10 +49,13 @@ function MainWork() {
         onChange={(e) => setName(e.target.value)} 
       />
     </div>
+    <div> 
+        <button className= "lets-go-btn" style = {{marginTop: '20%'}} onClick= {handleUpload} > Let's go </button>
+    </div>
         </header>
     </div>
+    
 
     );
-    }
-
+}
 export default MainWork;
