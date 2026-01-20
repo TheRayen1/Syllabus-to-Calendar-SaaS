@@ -1,12 +1,10 @@
-import parser
 import json 
 import google.oauth2.credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
-def json_to_calendar(output):
-    course_name = input("Please enter Course Name: ")
+def json_to_calendar(output,course_name):
     data = json.loads(output)
     calendar_events = []
     
@@ -50,7 +48,3 @@ def send_to_calendar(calendar_ready):
         print(f"Added: {event['summary']}")
     
     return "Done"
-output = parser.parse()
-calendar_ready = json_to_calendar(output)
-
-send_to_calendar(calendar_ready)

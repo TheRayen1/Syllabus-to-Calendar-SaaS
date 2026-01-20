@@ -5,6 +5,8 @@ import os
 import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import calendar_logic 
+
 
 
 app = Flask(__name__)
@@ -13,35 +15,33 @@ CORS(app)
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
-genai.configure(api_key="")
+genai.configure(api_key=api_key)
 @app.route('/upload', methods= ['POST'])
 def test_upload():
     uploaded_file = request.files['pdf_file']
     course_name = request.form.get('course_name')
+    response= parse(uploaded_file)
+    data = json.loads(response)
+    data['course_name'] = course_name
+    calendar_ready = calendar_logic.json_to_calendar(response, course_name)
 
-    return jsonify({"message": f"Successfully received {uploaded_file.filename} and {course_name}"})
+    calendar_logic.send_to_calendar(calendar_ready)
 
-def parse():
-    pdf_path = "test/"
-    pdf_path += input("Enter syllabus Efile name: ")
-    pdf_path += ".pdf"
+    return jsonify({"status": "Success"})
+
+def parse(pdf_path):
     text= extract_text_pypdf(pdf_path)
     response = api(text)
-    print(response)
+    #print(response)
     return response
 
 def extract_text_pypdf(pdf_path):
     """Extract text from PDF using pypdf"""
     text = ""
-    with open(pdf_path, 'rb') as file:
-        reader = pypdf.PdfReader(file)
-        
-        print(f"Number of pages: {len(reader.pages)}")
-        
-        for page_num, page in enumerate(reader.pages, 1):
-            page_text = page.extract_text()
-            #text += f"\n--- Page {page_num} ---\n"
-            text += page_text + "\n"
+    reader = pypdf.PdfReader(pdf_path)
+
+    for page in reader.pages:
+        text += page.extract_text() + "\n"
     
     return text
 def api(text): 
@@ -55,7 +55,7 @@ def api(text):
 
 ."""
 
-    model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    model = genai.GenerativeModel("gemini-1.5-flash")
     text += prompt
     response = model.generate_content(text)
     # Convert response to JSON
