@@ -1,47 +1,155 @@
 import pypdf
 import google.generativeai as genai
 from dotenv import load_dotenv
-import os 
+import os
 import json
-from flask import Flask, request, jsonify
+import logging
+from flask import Flask, request, jsonify, redirect, session, url_for
 from flask_cors import CORS
-import calendar_logic 
+from io import BytesIO
+from calendar_logic import (
+    json_to_calendar,
+    send_to_calendar,
+    get_authorization_url,
+    exchange_code_for_credentials
+)
 
-
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)
+app.secret_key = os.urandom(24)
+CORS(app, supports_credentials=True)
 
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 genai.configure(api_key=api_key)
-@app.route('/upload', methods= ['POST'])
-def test_upload():
+
+# Temporary storage for calendar events (keyed by OAuth state)
+# In production, use Redis or a database
+pending_events = {}
+
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    """Process PDF and store events, then redirect to Google OAuth"""
     uploaded_file = request.files['pdf_file']
     course_name = request.form.get('course_name')
-    response= parse(uploaded_file)
-    data = json.loads(response)
-    data['course_name'] = course_name
-    calendar_ready = calendar_logic.json_to_calendar(response, course_name)
+    logger.info(f"=== UPLOAD START ===")
+    logger.info(f"File: {uploaded_file.filename}, Course: {course_name}")
 
-    calendar_logic.send_to_calendar(calendar_ready)
+    # Extract text from uploaded PDF
+    text = extract_text_from_upload(uploaded_file)
+    logger.info(f"Extracted text length: {len(text)} chars")
 
-    return jsonify({"status": "Success"})
+    # Get assignments from Gemini API
+    assignments_json = api(text)
+    logger.info(f"Gemini response: {assignments_json}")
 
-def parse(pdf_path):
+    # Convert to calendar events
+    calendar_events = json_to_calendar(assignments_json, course_name)
+    logger.info(f"Calendar events created: {len(calendar_events)}")
+    logger.info(f"Events: {calendar_events}")
+
+    # Get OAuth URL and state
+    redirect_uri = url_for('oauth_callback', _external=True)
+    authorization_url, state = get_authorization_url(redirect_uri)
+
+    # Store events in server-side storage keyed by state
+    pending_events[state] = calendar_events
+    logger.info(f"Stored {len(calendar_events)} events with state: {state}")
+    logger.info(f"Redirect URI: {redirect_uri}")
+    logger.info(f"=== UPLOAD END ===")
+
+    return jsonify({
+        "message": f"Successfully processed {uploaded_file.filename}",
+        "events_count": len(calendar_events),
+        "auth_url": authorization_url
+    })
+
+
+@app.route('/callback')
+def oauth_callback():
+    """Handle OAuth callback from Google"""
+    logger.info(f"=== CALLBACK START ===")
+    code = request.args.get('code')
+    state = request.args.get('state')
+    logger.info(f"Received code: {code[:20]}..." if code else "No code received!")
+    logger.info(f"Received state: {state}")
+
+    redirect_uri = url_for('oauth_callback', _external=True)
+    logger.info(f"Redirect URI: {redirect_uri}")
+
+    # Exchange code for credentials
+    credentials = exchange_code_for_credentials(code, redirect_uri)
+    logger.info(f"Credentials obtained: {credentials.token[:20]}..." if credentials.token else "No token!")
+
+    # Get stored events using state
+    calendar_events = pending_events.get(state, [])
+    logger.info(f"Events from storage: {len(calendar_events)}")
+    logger.info(f"Pending events keys: {list(pending_events.keys())}")
+
+    if not calendar_events:
+        logger.error("No calendar events found for this state!")
+        return redirect(f"{FRONTEND_URL}?error=no_events")
+
+    # Convert credentials to dict for send_to_calendar
+    credentials_dict = {
+        'token': credentials.token,
+        'refresh_token': credentials.refresh_token,
+        'token_uri': credentials.token_uri,
+        'client_id': credentials.client_id,
+        'client_secret': credentials.client_secret,
+        'scopes': list(credentials.scopes)
+    }
+
+    # Send events to calendar
+    logger.info(f"Sending {len(calendar_events)} events to calendar...")
+    added_events = send_to_calendar(calendar_events, credentials_dict)
+    logger.info(f"Added events: {added_events}")
+
+    # Clean up stored events
+    pending_events.pop(state, None)
+    logger.info(f"=== CALLBACK END ===")
+
+    return redirect(f"{FRONTEND_URL}?success=true&count={len(added_events)}")
+
+
+def extract_text_from_upload(uploaded_file):
+    """Extract text from uploaded PDF file object"""
+    text = ""
+    reader = pypdf.PdfReader(BytesIO(uploaded_file.read()))
+
+    for page in reader.pages:
+        page_text = page.extract_text()
+        text += page_text + "\n"
+
+    return text
+
+def parse():
+    pdf_path = "test/"
+    pdf_path += input("Enter syllabus Efile name: ")
+    pdf_path += ".pdf"
     text= extract_text_pypdf(pdf_path)
     response = api(text)
-    #print(response)
+    print(response)
     return response
 
 def extract_text_pypdf(pdf_path):
     """Extract text from PDF using pypdf"""
     text = ""
-    reader = pypdf.PdfReader(pdf_path)
-
-    for page in reader.pages:
-        text += page.extract_text() + "\n"
+    with open(pdf_path, 'rb') as file:
+        reader = pypdf.PdfReader(file)
+        
+        print(f"Number of pages: {len(reader.pages)}")
+        
+        for page_num, page in enumerate(reader.pages, 1):
+            page_text = page.extract_text()
+            #text += f"\n--- Page {page_num} ---\n"
+            text += page_text + "\n"
     
     return text
 def api(text): 
@@ -55,7 +163,7 @@ def api(text):
 
 ."""
 
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")
     text += prompt
     response = model.generate_content(text)
     # Convert response to JSON
@@ -78,4 +186,4 @@ def api(text):
     })
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run(port=5000, debug=True)
