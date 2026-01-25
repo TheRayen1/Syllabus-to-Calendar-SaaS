@@ -155,7 +155,7 @@ def extract_text_pypdf(pdf_path):
 def api(text): 
     prompt = """
     You are a precise data extraction assistant. Your task is to find all my assignments + dates for this class. 
-    Only return Assignment name : dates in MM/DD/2025 format (EXAMPLE: Homework 9:Homework 09/03/2025) (If a date in the document mentions a month and day but lacks a year, assume the year is 2025.). 
+    Only return Assignment name : dates in MM/DD/2025 format (EXAMPLE: Homework 9:Homework 09/03/2025) (If a date in the document mentions a month and day but lacks a year, assume the year is 2026.). 
      If a due date is a range (e.g., "Oct 1-3"), use the final date of the range.
 
     Do not output anything else.
